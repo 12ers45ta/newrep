@@ -1,0 +1,194 @@
+1. #Крестики-Нолики
+2.
+3. import random
+4.
+5. def drawBoard(board):
+6.     #Эта функция рисует игровую доску с выполненными ходами
+7.
+8.     #"Доска" является списком из 10 строк которые рисуют доску в 
+символьной графике
+9.     print(' | |')
+10.    print(' ' + board[7] + ' | ' + board[8] + ' | ' + board[9])
+11.    print(' | |')
+12.    print('---+---+---')
+13.    print(' | |')
+14.    print(' ' + board[4] + ' | ' + board[5] + ' | ' + board[6])
+15.    print(' | |')
+16.    print('---+---+---')
+17.    print(' | |')
+18.    print(' ' + board[1] + ' | ' + board[2] + ' | ' + board[3])
+19.    print(' | |')
+20.
+21. def inputPlayerLetter():
+22.     #Позволяет игроку выбрать символ, которым он хочет играть
+23.     #Возвращает список с буквой игрока в качестве первого элемента и 
+буквой компьютера в качестве второго элемента
+24.     letter = ''
+25.     while not (letter == 'Х' or letter == 'О'):
+26.         print('Каким знаком вы будете играть? (Х или О)')
+27.         letter = input().upper()
+28.
+29.     #Первым элементом возвращаемого списка всегда должен быть знак игрока.
+30.     if letter == 'Х':
+31.         return ['Х', 'О']
+32.     else:
+33.         return ['О', 'Х']
+34.
+35. def whoGoesFirst():
+36.     #Случайно определяется, кто будет ходить первым
+37.     if random.randint(0, 1) == 0:
+38.         return 'компьютер'
+39.     else:
+40.         return 'игрок'
+41.
+42. def playAgain():
+43.     #Эта функция возвращает True, если игрок хочет сыграть еще раз. 
+Иначе False.
+44.     print('Вы хотите сыграть еще раз? (да или нет)')
+45.     return input().lower().startswith('д')
+46. 
+47. def makeMove(board, letter, move):
+48.     board[move] = letter
+49. 
+50. def isWinner(bo, le):
+51.     #Функция учитывает позицию на доске и текщий ход игрока. Возвращает 
+True, если игрок выиграл
+52.     #Мы используем bo вместо доски и le вместо полных имен переменных
+53.     return ((bo[7] == le and bo[8] == le and bo[9] == le) or #Верхняя линия
+54.     (bo[4] == le and bo[5] == le and bo[6] == le) or #Средняя линия
+55.     (bo[1] == le and bo[2] == le and bo[3] == le) or #Нижняя линия
+56.     (bo[7] == le and bo[4] == le and bo[1] == le) or #Левая вертикальная линия
+57.     (bo[8] == le and bo[5] == le and bo[2] == le) or #Центральная вертикаль
+58.     (bo[9] == le and bo[6] == le and bo[3] == le) or #Верхняя линия
+59.     (bo[7] == le and bo[5] == le and bo[3] == le) or #Диагональ
+60.     (bo[9] == le and bo[5] == le and bo[1] == le)) #Диагональ
+61. 
+62. def getBoardCopy(board):
+63.     #Сделаем копию игровой доски и вернем её
+64.     dupeBoard = []
+65. 
+66.     for i in board:
+65.         dupeBoard.append(i)
+67.
+68.     return dupeBoard
+69. 
+70. def isSpaceFree(board, move):
+71.     #Возвращает True если ход возможен
+72.     return board[move] == ' '
+73. 
+74. def getPlayerMove(board):
+75.     #Позволяет игроку выполнить ход
+76.     move = ''
+77.     while move not in '1 2 3 4 5 6 7 8 9'.split() or not 
+isSpaceFree(board, int(move)):
+78.         print('Ваш ход (1-9):')
+79.         move = input()
+80.     return int(move)
+81. 
+82. def chooseRandomMoveFromList(board, movesList):
+83.     #Возвращает случайный ход из полученного списка возможных ходов
+84.     #Возвращает None если ходов нет
+85.     possibleMoves = []
+86.     for i in movesList:
+87.         if isSpaceFree(board, i):
+88.             possibleMoves.append(i)
+89. 
+90.     if len(possibleMoves) != 0:
+91.         return random.choice(possibleMoves)
+92.     else:
+93.         return None
+94. 
+95. def getComputerMove(board, computerLetter):
+96.     #Получает копию содержимого доски и букву, которой ходит компьютер. 
+Исходя из этого определяет куда двигаться и возвращает ход
+97.     if computerLetter == 'Х':
+98.         playerLetter = 'О'
+99.     else:
+100.        playerLetter = 'Х'
+101. 
+102.    #Здесь начинается алгоритм ИИ "Крестики-Нолики"
+103.    #Первым шагом будет определение возможности победы на следующем ходу
+104.    for i in range(1, 10):
+105.        copy = getBoardCopy(board)
+106.        if isSpaceFree(copy, i):
+107.            makeMove(copy, computerLetter, i)
+108.            if isWinner(copy, computerLetter):
+109.                return i
+110 
+111.    #Проверяем, может ли игрок выиграть на следющем ходу, чтобы 
+заблокировать его
+112.    for i in range(1, 10):
+113.        copy = getBoardCopy(board)
+114.        if isSpaceFree(copy, i):
+115.            makeMove(copy, playerLetter, i)
+116.            if isWinner(copy, playerLetter):
+117.                return i
+118. 
+119.     #Попытаемся занять один из углов, если они свободны
+119.     move = chooseRandomMoveFromList(board, [1, 3, 7, 9])
+120.     if move != None:
+121.         return move
+122. 
+123.     #Занимаем центр, если он свободен
+124.     if isSpaceFree(board, 5):
+125.         return 5
+126. 
+127.     #Занимаем одну из боковых клеток
+128.     return chooseRandomMoveFromList(board, [2, 4, 6, 8])
+129. 
+130. def isBoardFull(board):
+131.     #Возвращаем True, если все клетки на доске были заняты. Иначе 
+возвращаем False
+132.     for i in range(1, 10):
+133.         if isSpaceFree(board, i):
+134.             return False
+135.     return True
+136
+137.
+138. print ('Давай сыграем в "Крестики-Нолики"!')
+139
+140. while True:
+141.     #Сбрасываем состояние игровой доски
+142.     theBoard = [' ']*10
+143.     playerLetter, computerLetter = inputPlayerLetter()
+144.     turn = whoGoesFirst()
+145.     print ('Первым будет ходить '+turn +'\n')
+146.     gameIsPlaying = True
+147. 
+148.     while gameIsPlaying:
+149.         if turn == 'игрок':
+150.             #Ход игрока
+151.             drawBoard(theBoard)
+152.             move = getPlayerMove(theBoard)
+153.             makeMove(theBoard, playerLetter, move)
+154. 
+155.             if isWinner(theBoard, playerLetter):
+156.                 drawBoard(theBoard)
+157.                 print ('Поздравляю!!! Вы победили в игре!')
+158.                 gameIsPlaying = False
+159.             else:
+160.                 if isBoardFull(theBoard):
+161.                     drawBoard(theBoard)
+162.                     print('Ничья. В следующий раз играй лучше')
+163.                     break
+164.                 else:
+165.                     turn = 'компьютер'
+166. 
+167.         else:
+168.             #Ход компьютера
+169.             move = getComputerMove(theBoard, computerLetter)
+170.             makeMove(theBoard, computerLetter, move)
+171.             if isWinner(theBoard, computerLetter):
+172.                 drawBoard(theBoard)
+173.                 print('Компьютер победил! Вы поиграли...')
+174.                 gameIsPlaying = False
+175.             else:
+176.                 if isBoardFull(theBoard):
+177.                     drawBoard(theBoard)
+178.                     print('Ничья. В следующий раз играй лучше')
+179.                     break
+180.                 else:
+181.                     turn = 'игрок'
+182. 
+183.     if not playAgain():
+185          break
